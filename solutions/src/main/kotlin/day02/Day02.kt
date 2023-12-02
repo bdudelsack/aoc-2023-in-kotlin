@@ -25,16 +25,12 @@ data class Game(val id: Int, val rounds: List<Triple<Int, Int, Int>>) {
     }
 }
 
-fun part1(lines: List<String>): Int {
-    return lines.map(Game::fromLine).filterNot {
-        it.rounds.any { r -> r.first > 12 || r.second > 13 || r.third > 14}
-    }.sumOf { it.id }
-}
+fun part1(lines: List<String>) = lines.map(Game::fromLine).filterNot {
+    it.rounds.any { r -> r.first > 12 || r.second > 13 || r.third > 14}
+}.sumOf { it.id }
 
-fun part2(lines: List<String>): Int {
-    return lines.map(Game::fromLine).map { game ->
-        (game.rounds.maxOf { it.first }) * (game.rounds.maxOf { it.second }) * (game.rounds.maxOf { it.third })
-    }.sum()
+fun part2(lines: List<String>): Int = lines.map(Game::fromLine).sumOf { game ->
+    (game.rounds.maxOf { it.first }) * (game.rounds.maxOf { it.second }) * (game.rounds.maxOf { it.third })
 }
 
 fun main() {
