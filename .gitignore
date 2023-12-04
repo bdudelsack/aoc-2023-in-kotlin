@@ -158,4 +158,4 @@ fabric.properties
 
 .gradle/**
 solutions/build/**
-src/**/*.txt
+solutions/src/**/*.txt
