@@ -47,3 +47,14 @@ data class Line(val start: Point, val end: Point) {
         }
     }
 }
+
+inline fun<reified T> String.to(): T = when(T::class) {
+    Byte::class -> toByte() as T
+    Int::class -> toInt() as T
+    Long::class -> toLong() as T
+    Float::class -> toFloat() as T
+    Double::class -> toDouble() as T
+    else -> throw IllegalStateException("Unknown generic class for string conversion: ${T::class}")
+}
+
+inline fun<reified T> String.splitNumbers() = this.trim().split(" +".toRegex()).map { it.to<T>() }
