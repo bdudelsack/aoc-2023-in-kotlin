@@ -14,45 +14,32 @@ enum class Combination(val rank: Int) {
 }
 
 data class Hand(val input: String, val joker: Char? = null) : Comparable<Hand> {
-    private val hand: Map<Char, Int> = if(joker == null) {
-        input.toList().sorted().groupingBy { it }.eachCount()
-    } else {
-        input.replace('J', joker).toList().sorted().groupingBy { it }.eachCount()
-    }
-    private val cards = if(joker == null) "AKQJT98765432" else "AKQT98765432J"
+    private val cards = joker?.run { "AKQT98765432J" } ?: "AKQJT98765432"
+    private val hand: Map<Char, Int> = (joker?.run { input.replace('J', joker) } ?: input).toList().sorted().groupingBy { it }.eachCount()
 
     private val combination by lazy {
-        if(hand.values.max() == 5) {
-            Combination.FIVE_OF_A_KIND
-        } else if(hand.values.max() == 4) {
-            Combination.FOUR_OF_A_KIND
-        } else if(hand.values.contains(3) && hand.values.contains(2)) {
-            Combination.FULL_HOUSE
-        } else if(hand.values.max() == 3) {
-            Combination.THREE_OF_A_KIND
-        } else if(hand.values.count { it == 2 } == 2) {
-            Combination.TWO_PAIR
-        } else if(hand.values.max() == 2) {
-            Combination.ONE_PAIR
-        } else {
-            Combination.HIGH_CARD
+        when {
+            hand.values.max() == 5 -> Combination.FIVE_OF_A_KIND
+            hand.values.max() == 4 -> Combination.FOUR_OF_A_KIND
+            hand.values.contains(3) && hand.values.contains(2) -> Combination.FULL_HOUSE
+            hand.values.max() == 3 -> Combination.THREE_OF_A_KIND
+            hand.values.count { it == 2 } == 2 -> Combination.TWO_PAIR
+            hand.values.max() == 2 -> Combination.ONE_PAIR
+            else -> Combination.HIGH_CARD
         }
     }
 
-    val cardRanks by lazy { input.toList().map { cards.length - cards.indexOf(it) } }
+    private val cardRanks by lazy { input.toList().map { cards.length - cards.indexOf(it) } }
 
-    fun mutateJoker(): Hand {
-        val filteredCards = hand.filter { it.key != 'J' }
+    fun mutateJoker(): Hand = hand.filter { it.key != 'J' }.let { filteredCards ->
         if(filteredCards.isEmpty()) {
-            // ALL JOKERS
-            return Hand(input, 'A')
+            Hand(input, cards.first())
+        } else {
+            val max = filteredCards.maxOf { it.value }
+            val candidates = filteredCards.filter { it.value == max }.map { it.key }.sortedBy { cards.indexOf(it) }
+
+            Hand(input, candidates.first())
         }
-
-        val max = filteredCards.maxOf { it.value }
-
-        val candidates = filteredCards.filter { it.value == max }.map { it.key }.sortedBy { cards.indexOf(it) }
-
-        return Hand(input, candidates.first())
     }
 
     override fun compareTo(other: Hand): Int {
@@ -73,9 +60,9 @@ data class Hand(val input: String, val joker: Char? = null) : Comparable<Hand> {
 fun List<Int>.compareTo(other: List<Int>): Int {
     if(size != other.size) throw IllegalStateException("Lists have different lengths")
     indices.forEach { n ->
-        if(get(n) > other.get(n)) {
+        if(this[n] > other[n]) {
             return 1
-        } else if(get(n) < other.get(n)) {
+        } else if(this[n] < other[n]) {
             return -1
         }
     }
@@ -83,28 +70,19 @@ fun List<Int>.compareTo(other: List<Int>): Int {
     return 0
 }
 
-fun part1(lines: List<String>): Int {
-    val res = lines.map { line ->
-        val (cards, bid) = line.split(" ")
-        Pair(Hand(cards),bid.toInt())
-    }.sortedBy { it.first }.mapIndexed { index, (hand, bid) ->
-        Pair(hand, bid * (index + 1))
-    }.sumOf { it.second }
+fun part1(lines: List<String>): Int = lines.map { line ->
+    val (cards, bid) = line.split(" ")
+    Pair(Hand(cards),bid.toInt())
+}.sortedBy { it.first }.mapIndexed { index, (hand, bid) ->
+    Pair(hand, bid * (index + 1))
+}.sumOf { it.second }
 
-
-    return res
-}
-
-fun part2(lines: List<String>): Int {
-    val res = lines.map { line ->
-        val (cards, bid) = line.split(" ")
-        Pair(Hand(cards).mutateJoker(),bid.toInt())
-    }.sortedBy { it.first }.mapIndexed { index, (hand, bid) ->
-        Pair(hand, bid * (index + 1))
-    }.sumOf { it.second }
-
-    return res
-}
+fun part2(lines: List<String>): Int = lines.map { line ->
+    val (cards, bid) = line.split(" ")
+    Pair(Hand(cards).mutateJoker(),bid.toInt())
+}.sortedBy { it.first }.mapIndexed { index, (hand, bid) ->
+    Pair(hand, bid * (index + 1))
+}.sumOf { it.second }
 
 fun main() {
     val testInput = readInput("day07/test")
