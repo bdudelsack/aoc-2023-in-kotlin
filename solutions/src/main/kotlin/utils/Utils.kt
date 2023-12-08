@@ -18,6 +18,8 @@ fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest
 
 fun<T> checkResult(result: T, expected: T) = check(result == expected) { "Check failed. Expected '$expected' got '$result'." }
 
+inline fun<reified T> T.println() = this.also { println(this) }
+
 data class Point(val x: Int, val y: Int) {
     companion object {
         fun fromString(input: String): Point {
