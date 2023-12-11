@@ -38,7 +38,7 @@ class Map2D<T>(initData: List<List<T>>): Iterable<T> {
         return Map2D(data)
     }
 
-    fun forEach(block: (T, Int, Int) -> Unit) {
+    fun forEach(block: (c: T, x: Int, y: Int) -> Unit) {
         data.forEachIndexed { y, line ->
             line.forEachIndexed { x, c ->
                 block(c,x,y)
@@ -48,6 +48,10 @@ class Map2D<T>(initData: List<List<T>>): Iterable<T> {
 
     fun findPoint(predicate: (T) -> Boolean): Point? {
         return indexedIterator().asSequence().firstOrNull { predicate(it.second) }?.first
+    }
+
+    fun findPoints(predicate: (T) -> Boolean): Sequence<Pair<Point, T>> {
+        return indexedIterator().asSequence().filter { predicate(it.second) }
     }
 
     fun isValid(pt: Point) = pt.x >= 0 && pt.y >= 0 && pt.x < width && pt.y < height
@@ -72,6 +76,11 @@ class Map2D<T>(initData: List<List<T>>): Iterable<T> {
             return Map2D(data)
         }
 
+        fun readFromLines(lines: List<String>): Map2D<Char> {
+            val data = lines.mapIndexed { y,line -> line.mapIndexed { x, char -> char } }
+            return Map2D(data)
+        }
+
         fun<T> create(width: Int, height: Int, init: (x: Int, y: Int) -> T): Map2D<T> {
             val data = List(height) { y -> List(width) { x -> init(x,y) } }
             return Map2D(data)
@@ -81,4 +90,3 @@ class Map2D<T>(initData: List<List<T>>): Iterable<T> {
     override fun iterator(): Iterator<T> = MapIterator(this)
     fun indexedIterator() = MapIndexedIterator(this)
 }
-
