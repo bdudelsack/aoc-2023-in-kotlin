@@ -46,9 +46,22 @@ class Map2D<T>(initData: List<List<T>>): Iterable<T> {
         }
     }
 
-    fun findPoint(predicate: (T) -> Boolean): Point {
-        return indexedIterator().asSequence().first { predicate(it.second) }.first
+    fun findPoint(predicate: (T) -> Boolean): Point? {
+        return indexedIterator().asSequence().firstOrNull { predicate(it.second) }?.first
     }
+
+    fun isValid(pt: Point) = pt.x >= 0 && pt.y >= 0 && pt.x < width && pt.y < height
+
+    fun neighbors(pt: Point) = listOf(
+        Point(-1, -1),
+        Point(0, -1),
+        Point(1, -1),
+        Point(-1, 0),
+        Point(1, 0),
+        Point(-1, 1),
+        Point(0, 1),
+        Point(1, 1),
+    ).map { pt + it }.filter { isValid(it) }
 
     fun rows() = RowsAccess(this)
     fun cols() = ColsAccess(this)
